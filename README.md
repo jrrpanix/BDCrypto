@@ -2,7 +2,7 @@
 NYU Big Data - Crypto Project  
 
 Install  
-  Requires pyyhon3 for downloading of Kracken Data  
+  Requires python3  
   Requires python3-kracken  
   
   installing python3-kracken  
