@@ -60,6 +60,7 @@ def testTrades():
         if not  'result' in trades : continue
         res = trades['result']
         for k in res.keys():
+            time.sleep(1) # throttle 
             if k == 'last':
                 since = res[k]
 
