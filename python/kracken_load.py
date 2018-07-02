@@ -38,10 +38,20 @@ def writeTrades(t, trades):
     fname = "{}.json".format(t)
     with open(t, "w") as f :
         f.write(json.dumps(trades))
-    
-    
+
+def getLast():
+    if os.path.isfile("./last") is False:
+        return 0
+    data = open("./last")
+    last = 0
+    for line in data:
+        test = int(line)
+        if test > last:
+            last = test
+    return last
+
 def testTrades():
-    since = 0
+    since = getLast()
     pair = 'XXBTZUSD'
 
     lfp = open("./last", "a")
@@ -52,7 +62,7 @@ def testTrades():
         for k in res.keys():
             if k == 'last':
                 since = res[k]
-                
+
                 lfp.write( "%s\n" % str(since))
             else :
                 rk = res[k]
@@ -61,7 +71,7 @@ def testTrades():
                 t0 = "NA" if k == 'last' else getTime(rk[0][2])
                 tN = "NA" if k == 'last' else getTime(rk[-1][2])
                 print(t0, tN, len(rk))
-                
+
 # interval = 1
 # getOHLCData(pair, interval, since)
 #    with open("./tmp.json", "w") as f :
@@ -79,12 +89,12 @@ def readJson():
             else:
                 t0 = "NA" if k == 'last' else getTime(rk[0][2])
                 tN = "NA" if k == 'last' else getTime(rk[-1][2])
-                
+
                 print(k, len(rk), rk[0], t0, rk[-1], tN)
                 for r in rk:
                     print(r, getTime(r[2]))
 
-        
+
 if __name__ == '__main__':
     #readJson()
     t = time.time()
@@ -94,4 +104,3 @@ if __name__ == '__main__':
     ts = time.strftime('%Y%m%d_%H%M%S', tm)
     print(ts)
     testTrades()
-    
