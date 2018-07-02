@@ -10,6 +10,9 @@ def getTime(t):
     ts = time.strftime('%Y%m%d_%H%M%S', tm)
     return ts
 
+def getTimeNowNS() :
+    return int(time.time()*1000000000)
+
 
 #
 # OHLC - interval data (O) open, (H) high, (L) low, (C) close
@@ -39,16 +42,44 @@ def writeTrades(t, trades):
     with open(t, "w") as f :
         f.write(json.dumps(trades))
 
-def getLast():
-    if os.path.isfile("./last") is False:
+def getLast(last_file="./last"):
+    if os.path.isfile(last_file) is False:
         return 0
-    data = open("./last")
+    data = open(last_file))
     last = 0
     for line in data:
         test = int(line)
         if test > last:
             last = test
     return last
+
+
+def loadTrades(pair='XXBTZUSD', since=0, stop_date=0)
+    stop_date = stop_date if stop_date == 0 : else getTimeNowNS()
+    fault_count = 0;
+    last_file ="{}_{}".format("./last", pair)
+    since = since if since != 0 else getLast(last_file)
+    lfp = open(last_file, "a")
+    while since < stop_date :
+        trades = getTrades(pair, since)
+        if not 'result' in trades:
+            fault_count += 1
+            assert fault_count < 12
+            continue
+        res = trades['result']
+        fc = 0
+        for k in res.keys():
+            if k == 'last':
+                since = res[k]
+                
+                lfp.write( "%s\n" % str(since))
+            else :
+                rk = res[k]
+                firstTime = getTime(rk[0][2])
+                writeTrades(firstTime, trades)
+                t0 getTime(rk[0][2])
+                tN getTime(rk[-1][2])
+                print(t0, tN, len(rk))
 
 def testTrades():
     since = getLast()
