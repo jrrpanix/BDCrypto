@@ -4,14 +4,31 @@ import json
 import time
 import os
 import sys
+import argparse
 
-def getTime(t,fmt=0):
+#
+# return time from epoch in seconds to a readable string
+#
+def formatTime(t,fmt=0):
     tm = time.gmtime(t)
     if fmt == 0 : return time.strftime('%Y%m%d_%H%M%S', tm)
     return time.strftime('%m/%d/%Y %H:%M:%S', tm)
-
+#
+# express current time as nanoseconds from epoch
+#
 def getTimeNowNS() :
     return int(time.time()*1000000000)
+
+#
+# get nanoseconds from epoch, given year YYYY , month 1-12 and day 1-31
+#
+def getTimeEpochNSfromYMD(yyyymmdd):
+    ys = str(yyyymmdd)
+    year, month, day = int(ys[0:4]), int(ys[4:6]), int(ys[6:8])
+    dstr = "{}/{}/{} 00:00:00".format(month, day, year)
+    tm = time.strptime(dstr, '%m/%d/%Y %H:%M:%S')
+    t = time.mktime(tm)
+    return int(t*1000000000)
 
 
 #
@@ -63,7 +80,6 @@ def getTrades(pair, since) :
         return None
 
 def writeTrades(t, trades):
-    fname = "{}.json".format(t)
     with open(t, "w") as f :
         f.write(json.dumps(trades))
 
@@ -79,72 +95,20 @@ def getLast(last_file="./last"):
     return last
 
 
-def loadTrades(pair='XXBTZUSD', since=0, stop_date=0):
-    stop_date = stop_date if stop_date == 0 else getTimeNowNS()
-    fault_count = 0;
-    last_file ="{}_{}".format("./last", pair)
-    since = since if since != 0 else getLast(last_file)
-    lfp = open(last_file, "a")
-    while since < stop_date :
-        trades = getTrades(pair, since)
-        if not 'result' in trades:
-            fault_count += 1
-            assert fault_count < 12
-            continue
-        res = trades['result']
-        fc = 0
-        for k in res.keys():
-            if k == 'last':
-                since = res[k]
-                
-                lfp.write( "%s\n" % str(since))
-            else :
-                rk = res[k]
-                firstTime = getTime(rk[0][2])
-                writeTrades(firstTime, trades)
-                t0, tN = getTime(rk[0][2]), getTime(rk[-1][2])
-                print(t0, tN, len(rk))
-
-def testTrades():
-    since = getLast()
-    pair = 'XXBTZUSD'
-
-    lfp = open("./last", "a")
-    for i in range(1000):
-        trades = getTrades(pair, since)
-        if not  'result' in trades : continue
-        res = trades['result']
-        for k in res.keys():
-            time.sleep(1) # throttle 
-            if k == 'last':
-                since = res[k]
-
-                lfp.write( "%s\n" % str(since))
-            else :
-                rk = res[k]
-                firstTime = getTime(rk[0][2])
-                writeTrades(firstTime, trades)
-                t0 = "NA" if k == 'last' else getTime(rk[0][2])
-                tN = "NA" if k == 'last' else getTime(rk[-1][2])
-                print(t0, tN, len(rk))
-
 # interval = 1
 # getOHLCData(pair, interval, since)
 #    with open("./tmp.json", "w") as f :
 #        f.write(json.dumps(trades, indent=4))
 
-def readJson(json_data):
-    if not 'result' in json_data: return None
-    res = j['result']
+def readJson(jsonData):
+    if not 'result' in jsonData: return None
+    res = jsonData['result']
     for k in res.keys():
         rk = res[k]
         if k == 'last' :
             continue
         else:
-            print(k, len(rk), rk[0], t0, rk[-1], tN)
-#            for r in rk:
-#               print(r, getTime(r[2]))
-
+            print(k, len(rk), rk[0], rk[-1])
 
 def createCSV(data_dir, output_file="./data.csv") :
     wf = open(output_file, "w")
@@ -196,18 +160,67 @@ def showMarketSnap():
         ohlc = ohlc_results['result'][key]
         start, end = ohlc[0][0], ohlc[-1][0]
         sclose, eclose = float(ohlc[0][4]), float(ohlc[-1][4])
-        sstr, estr = getTime(start, 1), getTime(end, 1)
+        sstr, estr = formatTime(start, 1), formatTime(end, 1)
         pct = (eclose - sclose)/eclose * 100.0
         print( "%10s start: %s %12.6f, end: %s %12.6f : var %10.6f" % (key, sstr, sclose, estr, eclose, pct))
             
-        
-            
+
+def createDataSet(dataDir, pair, sinceDate=0, toDate=0):
+    results = getAssetPairs()
+    assert results is not None
+    assert pair in results['result'].keys()
+    toDate = toDate if toDate > 0 else getTimeNowNS()
+    assert toDate > sinceDate
+    if not os.path.exists(dataDir) :
+        os.makedirs(dataDir)
+        print("created", dataDir)
+    lastFile = os.path.join(dataDir, "last")
+    lastUpdate = getLast(lastFile)
+    print(lastUpdate, toDate)
+    sinceDate = sinceDate if sinceDate == 0 else getTimeEpochNSfromYMD(sinceDate)
+    sinceDate = max(sinceDate, lastUpdate)
+    lfp = open(lastFile, "a")    
+    faultCount = 0
+    while sinceDate < toDate :
+        trades = getTrades(pair, sinceDate)
+        time.sleep(1) # throttle requests to avoid exchanging timing out
+        if not 'result' in trades:
+            faultCount += 1
+            if faultCount > 6:
+                # too many failures wait
+                print("pausing exchange requests, sleeping for 10 seconds")
+                time.sleep(10) # too many failures 
+            assert faultCount < 12
+            continue
+        res = trades['result']
+        faultCount = 0
+        for k in res.keys():
+            if k == 'last':
+                lfp.write( "%s\n" % str(sinceDate))
+                sinceDate = int(res[k])
+            else :
+                rk = res[k]
+                firstTime = formatTime(rk[0][2])
+                outputFile = os.path.join(dataDir, "{}.json".format(firstTime))
+                writeTrades(outputFile, trades)
+                t0, tN = formatTime(rk[0][2]), formatTime(rk[-1][2])
+                print("processing trades from %s to %s count = %d" % (t0, tN, len(rk)))
+    
 if __name__ == '__main__':
-    showMarketSnap()
-    #showAssetPairs()
-    #print(getAssetPairs())
-    #testTrades()
-    #showAssets()
-    #assert len(sys.argv) > 1
-    #data_dir = sys.argv[1]
-    #createCSV(data_dir)
+    parser = argparse.ArgumentParser(description="kraken api options")
+    parser.add_argument('--run', choices=['csv', 'load', 'show'])
+    parser.add_argument('--output_dir')
+    parser.add_argument('--pair')
+    parser.add_argument('--csv_file')
+    parser.add_argument('--from_date', default=0, type=int)
+    args = parser.parse_args()
+    assert args.run is not None
+    if args.run == 'load': assert args.output_dir is not None and args.pair is not None
+    if args.run == 'csv' : assert args.csv_file is not None and args.output_dir is not None
+
+    if args.run == 'load' :
+        createDataSet(args.output_dir, args.pair, args.from_date)
+    if args.run == 'csv' :
+        createCSV(args.output_dir, args.csv_file)
+    if args.run == 'show':
+        showAssetPairs()
