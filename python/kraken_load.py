@@ -16,6 +16,31 @@ def getTimeNowNS() :
 
 
 #
+# get the individual asset names
+#
+def getAssets() :
+    kraken = krakenex.API()
+    try:
+        response = kraken.query_public('Assets', {})
+        return response
+    except HTTPError as e:
+        print(str(e))
+    return None
+
+#
+# get the asset pairs that trade
+#
+def getAssetPairs() :
+    kraken = krakenex.API()
+    try:
+        response = kraken.query_public('AssetPairs', {})
+        return response
+    except HTTPError as e:
+        print(str(e))
+    return None
+
+
+#
 # OHLC - interval data (O) open, (H) high, (L) low, (C) close
 # 'since' : 0
 # 'pair'  : 'XXBTZUSD'
@@ -24,10 +49,10 @@ def getOHLC(pair, interval, since) :
     kraken = krakenex.API()
     try:
         response = kraken.query_public('OHLC', {'pair': pair, 'interval' : interval, 'since' : since})
-        print(response)
-        #pprint.pprint(response)
+        return response
     except HTTPError as e:
         print(str(e))
+    return None
 
 def getTrades(pair, since) :
     kraken = krakenex.API()
@@ -141,9 +166,32 @@ def createCSV(data_dir, output_file="./data.csv") :
                 wf.write(line)
         except:
             print(f)
-                    
+#
+# get the list of currencies offered on kraken
+#
+def showAssets() :
+    results = getAssets()
+    assert results is not None
+    for key, value in results['result'].items():
+        altname = value['altname']
+        dec = value['decimals']
+        disp = value['display_decimals']
+        fstr = "{},{},{},{}".format(key, altname, dec, disp)
+        print(fstr)
+
+def showAssetPairs():
+    results = getAssetPairs()
+    assert results is not None
+    for key, value in results['result'].items():
+        if 'USD' in value['quote'] :
+            fstr = "{},{},{}".format(key, value['base'], value['quote'])
+            print(fstr)
+        
 if __name__ == '__main__':
+    showAssetPairs()
+    #print(getAssetPairs())
     #testTrades()
-    assert len(sys.argv) > 1
-    data_dir = sys.argv[1]
-    createCSV(data_dir)
+    #showAssets()
+    #assert len(sys.argv) > 1
+    #data_dir = sys.argv[1]
+    #createCSV(data_dir)
