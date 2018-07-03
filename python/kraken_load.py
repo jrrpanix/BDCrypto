@@ -5,11 +5,10 @@ import time
 import os
 import sys
 
-def getTime(t):
+def getTime(t,fmt=0):
     tm = time.gmtime(t)
-    #ts = time.strftime('%m/%d/%Y %H:%M:%S', tm)
-    ts = time.strftime('%Y%m%d_%H%M%S', tm)
-    return ts
+    if fmt == 0 : return time.strftime('%Y%m%d_%H%M%S', tm)
+    return time.strftime('%m/%d/%Y %H:%M:%S', tm)
 
 def getTimeNowNS() :
     return int(time.time()*1000000000)
@@ -186,9 +185,26 @@ def showAssetPairs():
         if 'USD' in value['quote'] :
             fstr = "{},{},{}".format(key, value['base'], value['quote'])
             print(fstr)
+
+def showMarketSnap():
+    results = getAssetPairs()
+    assert results is not None
+    for key, value in results['result'].items():
+        if not 'USD' in value['quote'] : continue
+        if ".d" in key : continue
+        ohlc_results = getOHLC(key, 1, 0)
+        ohlc = ohlc_results['result'][key]
+        start, end = ohlc[0][0], ohlc[-1][0]
+        sclose, eclose = float(ohlc[0][4]), float(ohlc[-1][4])
+        sstr, estr = getTime(start, 1), getTime(end, 1)
+        pct = (eclose - sclose)/eclose * 100.0
+        print( "%10s start: %s %12.6f, end: %s %12.6f : var %10.6f" % (key, sstr, sclose, estr, eclose, pct))
+            
         
+            
 if __name__ == '__main__':
-    showAssetPairs()
+    showMarketSnap()
+    #showAssetPairs()
     #print(getAssetPairs())
     #testTrades()
     #showAssets()
