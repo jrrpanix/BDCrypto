@@ -81,7 +81,7 @@ def getTrades(pair, since) :
         except HTTPError as e:
             error_count += 1
             time.sleep(pow(2, error_count)) # exponential backoff
-            if error_count > 5:
+            if error_count >= 5:
                 print(str(e))
                 return None
 
