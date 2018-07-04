@@ -163,7 +163,7 @@ def showMarketSnap():
         sstr, estr = formatTime(start, 1), formatTime(end, 1)
         pct = (eclose - sclose)/eclose * 100.0
         print( "%10s start: %s %12.6f, end: %s %12.6f : var %10.6f" % (key, sstr, sclose, estr, eclose, pct))
-            
+
 
 def createDataSet(dataDir, pair, sinceDate=0, toDate=0):
     results = getAssetPairs()
@@ -179,7 +179,7 @@ def createDataSet(dataDir, pair, sinceDate=0, toDate=0):
     print(lastUpdate, toDate)
     sinceDate = sinceDate if sinceDate == 0 else getTimeEpochNSfromYMD(sinceDate)
     sinceDate = max(sinceDate, lastUpdate)
-    lfp = open(lastFile, "a")    
+    lfp = open(lastFile, "a")
     faultCount = 0
     while sinceDate < toDate :
         trades = getTrades(pair, sinceDate)
@@ -189,7 +189,7 @@ def createDataSet(dataDir, pair, sinceDate=0, toDate=0):
             if faultCount > 6:
                 # too many failures wait
                 print("pausing exchange requests, sleeping for 10 seconds")
-                time.sleep(10) # too many failures 
+                time.sleep(10) # too many failures
             assert faultCount < 12
             continue
         res = trades['result']
@@ -205,7 +205,7 @@ def createDataSet(dataDir, pair, sinceDate=0, toDate=0):
                 writeTrades(outputFile, trades)
                 t0, tN = formatTime(rk[0][2]), formatTime(rk[-1][2])
                 print("processing trades from %s to %s count = %d" % (t0, tN, len(rk)))
-    
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="kraken api options")
     parser.add_argument('--run', choices=['csv', 'load', 'show'])
@@ -215,6 +215,9 @@ if __name__ == '__main__':
     parser.add_argument('--from_date', default=0, type=int)
     args = parser.parse_args()
     assert args.run is not None
+
+    if args.output_dir is None: args.output_dir = args.pair
+    if args.csv_file is None and args.pair is not None: args.csv_file = args.pair + ".csv"
     if args.run == 'load': assert args.output_dir is not None and args.pair is not None
     if args.run == 'csv' : assert args.csv_file is not None and args.output_dir is not None
 
