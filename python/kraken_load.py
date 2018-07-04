@@ -112,6 +112,7 @@ def readJson(jsonData):
 
 def createCSV(data_dir, output_file="./data.csv") :
     wf = open(output_file, "w")
+    wf.write("price,quantity,timestamp,buy_or_sell,limit_or_market,\n")
     for f in sorted(os.listdir(data_dir)):
         try:
             json_data = json.load(open(os.path.join(data_dir, f)))
