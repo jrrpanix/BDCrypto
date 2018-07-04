@@ -72,12 +72,18 @@ def getOHLC(pair, interval, since) :
 
 def getTrades(pair, since) :
     kraken = krakenex.API()
-    try:
-        response = kraken.query_public('Trades', {'pair': pair, 'since' : since})
-        return response
-    except HTTPError as e:
-        print(str(e))
-        return None
+    error_count = 0
+    #retries until error threshold hit
+    while True:
+        try:
+            response = kraken.query_public('Trades', {'pair': pair, 'since' : since})
+            return response
+        except HTTPError as e:
+            error_count += 1
+            time.sleep(pow(2, error_count)) # exponential backoff
+            if error_count > 5:
+                print(str(e))
+                return None
 
 def writeTrades(t, trades):
     with open(t, "w") as f :
