@@ -78,7 +78,7 @@ def getTrades(pair, since) :
         try:
             response = kraken.query_public('Trades', {'pair': pair, 'since' : since})
             return response
-        except HTTPError as e:
+        except Exception as e:
             error_count += 1
             time.sleep(pow(2, error_count)) # exponential backoff
             if error_count >= 5:
