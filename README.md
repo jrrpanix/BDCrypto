@@ -1,5 +1,5 @@
 # BDCrypto
-NYU Big Data - Crypto Project  
+Crypto Project  
 
 Install  
   Requires python3  
