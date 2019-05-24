@@ -53,15 +53,11 @@ def getTimeEpochNSfromYMD(yyyymmdd):
     t = time.mktime(tm)
     return int(t*1000000000)
 
-def header() :
-    return "price,qty,timestamp,bs,ml,bucket"
-
 def linestr(price, qty, timeasfloat, s, m) :
     return ('%f,%f,%f,%s,%s,%s') % (price, qty, timeasfloat, s, m, timeBucket(int(timeasfloat)))
     
 def bucketData(input_file, output_file):
     outf = open(output_file, "w")
-    outf.write( "%s\n" % header())
     with open(input_file) as f:
         for i, line in enumerate(f):
             if i == 0 :
