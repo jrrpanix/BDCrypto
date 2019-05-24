@@ -155,7 +155,7 @@ def predictPrice(dataSet: org.apache.spark.sql.DataFrame, pair: String, resp: In
   predict the change in prices
 
 **/
-val dataDir : String = "hdfs:///user/crypto_user/bucket/"
+val dataDir : String = "hdfs:///user/jr4716/bucket/"
 val pairs : Array[String] = Array("XBT", "ETH", "XRP", "LTC")
 val keepFields : Array[String] = Array("bucket", "price", "dpx", "fwdDelta")
 val dataSet = merge(dataDir, pairs, keepFields)
