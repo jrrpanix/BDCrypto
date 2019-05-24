@@ -1,0 +1,118 @@
+.topBar {
+    position: fixed;
+    height: 65px;
+    line-height: 65px;
+    background: white;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    display: flex;
+    width: 100%;
+}
+
+#selectAlgo {
+}
+
+#slider-container {
+    margin-top: 17px;
+    padding-left: 18px;
+    padding-right: 18px;
+    margin-left: 20px;
+    flex: 1;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.drag {
+  pointer-events: none;
+  background-color:
+}
+
+#range {
+    width: 100%;
+    font-size: .75em;
+}
+
+#range-start {
+    float: left;
+}
+
+#range-end {
+    float: right;
+}
+
+#slider {
+    width: 100%;
+}
+
+#select {
+    font-weight: bold;
+    font-size: 1em;
+    height: 40px;
+    margin-left: 62px;
+}
+
+
+.graphTitle .name {
+  display: inline-block;
+  float: left;
+}
+.graphTitle .actual {
+  display: inline-block;
+  float: right;
+  margin-left: 20px;
+  font-size: .75em;
+}
+.graphTitle .predicted {
+  display: inline-block;
+  float: right;
+  margin-left: 20px;
+  font-size: .75em;
+}
+
+.graphContent {
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 50px;
+    border-bottom: 1px black;
+}
+
+.tooltip {
+    position: fixed;
+    text-align: left;
+    padding: 3px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    pointer-events: none;
+    border-radius: 3px;
+    z-index: 10000;
+    display: none;
+}
+
+.graph {
+    float: left;
+    width: 100%;
+    clear: both;
+}
+
+.graphMetrics {
+    float: left;
+    padding: 20px;
+    display: flex;
+    width: 100%;
+    border-bottom: 1px solid black;
+    border-top: 1px solid black;
+}
+
+.graphMetrics span {
+  flex: 1;
+}
+
+#content {
+    position: relative;
+    width: 100%;
+    margin-top: 90px;
+}
