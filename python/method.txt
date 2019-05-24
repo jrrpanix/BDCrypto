@@ -1,0 +1,61 @@
+
+#
+# Sample Fit Method
+#
+
+inputs :
+
+       Trade Prices : ETH, XRP, BT, LTC
+
+indicator: (can have multiple indicators)
+
+	   EMA:  Exponential Moving Average(period as parameter)
+	   EMA(t) = a * P(t) + (1 - a) * EMA(t-1)
+ 	   EMA(0) = P(t)
+	   a = 2.0/(1.0 + period)
+
+indicator sampeling steps:
+
+	  we are going to create two matricies:
+	   (a) matrix of features that are sampled at some interval, sampleFreq
+	   (b) a matrix of responses (what we are trying to predict)
+	   the objective will be to estimate coefficients for the equations
+	   
+	   XRP(t)-XRP(t-1) = b11*(XRP(t) - EMA(XRP)) + b12*(LTC(t) - EMA(LTC)) + b13*(XBT(t) - EMA(XBT)) + b14*(ETH(t) - EMA(ETH))
+	   ETH(t)-ETH(t-1) = b21*(XRP(t) - EMA(XRP)) + b22*(LTC(t) - EMA(LTC)) + b23*(XBT(t) - EMA(XBT)) + b24*(ETH(t) - EMA(ETH)) 
+	   XBT(t)-XBT(t-1) = b31*(XRP(t) - EMA(XRP)) + b32*(LTC(t) - EMA(LTC)) + b33*(XBT(t) - EMA(XBT)) + b34*(ETH(t) - EMA(ETH)) 
+	   LTC(t)-LTC(t-1) = b41*(XRP(t) - EMA(XRP)) + b42*(LTC(t) - EMA(LTC)) + b43*(XBT(t) - EMA(XBT)) + b44*(ETH(t) - EMA(ETH))
+
+	   define price differental between current price and EMA as dx
+	   dX_XRP(t) = XRP(t) - EMA(XRP)
+	   dY_XRP(t) = XRP(t) - XRP(t-1)
+	   
+
+	   in matrix form 
+	   
+    
+	   dY_COIN = b*dX_COIN, 	
+
+	  (0) Assign sampeling parameter, "sampleFreq" this will be the number of observations played 
+	      that a sample will occurr. set count to 0.  increment count after each observation
+	      when count == sampleFreq, sample each coins EMA, set count back to zero
+	  (1) Read in Trade CSV Files (eth.csv, xrp,csv, xbt.csv, ltc.csv)
+	      Create Python class "dataSource" for each of (xrp, ltc, xbt, eth)
+	      Create List of "dataSources" sources = [xrp, ltc, xbt, eth]
+	  (2) playback the prices in time order
+	      foreach source in data 
+	        - get the source with the lowest time
+	      	- update the EMA
+	  (3) check if count == sample
+	      compute dx = P(t) - EMA(T), for each coin
+	      place dx into observation matrix, increment row count
+	      compute dy = P(t) - PriceAtLastObservation
+	      place dy into reponse matrix previous row
+	      
+
+run regession
+
+       bEstimate = (DX_COIN.trandpose * DX_COIN).inverse*(DX_COIN.transpose * DY_COIN)
+	  
+
+
